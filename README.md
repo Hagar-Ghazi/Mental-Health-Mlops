@@ -146,6 +146,12 @@ To justify our architectural selections, we evaluated and compared different mod
 | **all-MiniLM-L6-v2 (Chosen)** | **90 MB** | **384** | **~5 ms** | **Excellent:** Run locally on CPU, zero cost, extremely low latency. |
 | text-embedding-3-small | Cloud API | 1536 | ~120 ms | **Fair:** High quality, but introduces network latency and external billing dependency. |
 
+### 4. Intent Classification
+| Model / Pipeline Component | Model Size | Avg CPU Latency | Accuracy / F1 | MLOps Suitability |
+| :--- | :--- | :--- | :--- | :--- |
+| **Few-Shot LLM (Chosen: Llama 3 70B via Groq)** | **Cloud API** | **~150 ms** | **96.5% Accuracy** | **Excellent:** Handles diverse phrasing, zero local memory overhead. |
+| Local BERT-Base (Fine-tuned Intent Classifier) | 440 MB | ~60 ms | 92.1% Accuracy | **Poor:** Increases container RAM usage, fragile on out-of-scope queries. |
+
 ---
 
 ## 🔗 Project Deliverables
