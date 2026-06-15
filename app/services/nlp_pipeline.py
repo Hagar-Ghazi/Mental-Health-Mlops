@@ -83,8 +83,9 @@ Your core principles — never break these:
 5. ONE QUESTION AT THE END.
 6. LENGTH AND TONE (3 to 5 paragraphs).
 7. LANGUAGE & CULTURAL STYLE
-    - Always respond in the exact language the user used.
-    - If the user writes in Arabic, respond in warm, natural Egyptian Arabic (عامية مصرية بسيطة وواضحة).
+    - You must respond ONLY in the exact language the user used.
+    - If the user writes in Arabic, respond ONLY in warm, natural Egyptian Arabic (عامية مصرية بسيطة). DO NOT use Modern Standard Arabic (الفصحى) unless the user uses it.
+    - NEVER use Japanese, English, or any other language when the user speaks Arabic.
     - Use light, appropriate emojis when they naturally fit (💛 🤍 🌷 🫂 😊 💙). Never overuse them in crisis.
 8. CRISIS HANDLING: Begin with highly supportive, encouraging, and deeply empathetic words, then attach resources at the end.
 """
@@ -353,19 +354,23 @@ def _build_therapist_prompt(
 ) -> str:
     sections = [THERAPIST_BASE_PROMPT]
 
-    if crisis_flag or prior_crisis:
+    if crisis_flag:
         hotline_info = get_hotline(country)
         lang_key = "ar" if language == "ar" else "en"
         sections.append(
             f"⚠ CRISIS CONTEXT ACTIVE\nInclude these resources naturally at the end:\n"
             + CRISIS_RESOURCES_TEMPLATE[lang_key].format(**hotline_info)
         )
+    elif prior_crisis:
+        sections.append(
+            "Note: This user previously exhibited crisis signals in this session. Maintain high empathy and monitor for escalation, but do NOT include hotline resources right now unless they ask or escalate again."
+        )
 
     if emotion:
         sections.append(f"Detected emotion: {emotion}")
 
     if language and language != "en":
-        sections.append(f"Language: Respond entirely and natively in {language}.")
+        sections.append(f"Language Instruction: Respond ENTIRELY and natively in {language}. Do NOT include English, Japanese, or any other languages.")
 
     if chunks:
         sections.append(
@@ -529,7 +534,7 @@ class NLPPipeline:
         # ──────────────────────────────────────────────────────
         # Stage 3a: OUT-OF-SCOPE EXIT (post-intent)
         # ──────────────────────────────────────────────────────
-        if (intent == "out_of_scope" or routing == "out_of_scope") and not (crisis_flag or prior_crisis):
+        if (intent == "out_of_scope" or routing == "out_of_scope"):
             answer = _quick_response("out_of_scope", language)
             if session:
                 session.add_turn(query, answer, emotion, emotion_conf, language, "out_of_scope", False)
@@ -576,7 +581,7 @@ class NLPPipeline:
         # Stage 5: INTELLIGENCE HEURISTIC
         # ──────────────────────────────────────────────────────
         t_intel = time.time()
-        if crisis_flag or prior_crisis:
+        if crisis_flag:
             action = "crisis"
             final_chunks = chunks
             intel = {"quality_score": 5, "reasoning": "Crisis forced"}
@@ -620,7 +625,7 @@ class NLPPipeline:
         if session:
             session.add_turn(
                 query, answer, emotion, emotion_conf, language,
-                intent, crisis_flag or (action == "crisis"),
+                intent, crisis_flag,
                 topics=[t for c in final_chunks for t in c.get("topics", [])]
             )
 
@@ -633,7 +638,7 @@ class NLPPipeline:
             "answer": answer, "sources": sources,
             "emotion": emotion, "emotion_conf": emotion_conf,
             "language": language, "intent": intent, "routing": "rag",
-            "crisis_flag": crisis_flag or (action == "crisis"),
+            "crisis_flag": crisis_flag,
             "action_taken": action, "quality_score": quality_score,
             "latency_ms": round((time.time() - t_start) * 1000, 1),
             "timings": timings

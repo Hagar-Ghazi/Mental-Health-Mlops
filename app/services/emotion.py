@@ -73,8 +73,9 @@ class EmotionClassifier:
                 "tone": "Open, curious, non-assumptive"
             }
 
-        # Labeled as risk if high-confidence sadness or fear
-        risk_flag = label_name in ("sadness", "fear") and confidence > 0.80
+        # We do NOT set risk_flag solely based on sadness or fear.
+        # Only explicit intent classification or hardcoded crisis phrases should trigger crisis routing.
+        risk_flag = False
 
         return {
             "emotion": label_name,
