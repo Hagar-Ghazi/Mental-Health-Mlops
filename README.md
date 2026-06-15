@@ -7,10 +7,9 @@ sdk: docker
 app_port: 7860
 pinned: false
 ---
-
 # Serenity Chatbot Backend (MLOps Production Release)
 
-Serenity is an empathetic mental health support chatbot API built with FastAPI, containerized with Docker, monitored using OpenTelemetry and Axiom, and deployed automatically via GitHub Actions CI/CD to Hugging Face Spaces.
+Serenity is an empathetic mental health support chatbot API built with FastAPI, containerized with Docker, monitored using OpenTelemetry and Axiom, and deployed automatically via GitHub Actions CI/CD to Hugging Face Spaces (CPU Free tier).
 
 ---
 
