@@ -129,6 +129,8 @@ To justify our architectural selections, we evaluated and compared different mod
 | Model / Pipeline Component | Model Size | Avg CPU Latency | Accuracy / F1 | MLOps Suitability |
 | :--- | :--- | :--- | :--- | :--- |
 | **Language: TF-IDF + Linear SVC (Chosen)** | **251 MB** | **~2 ms** | **98.4% F1** | **Excellent:** Extremely fast, local execution, negligible CPU overhead. |
+| Language: TF-IDF + Logistic Regression | 240 MB | ~2 ms | 96.2% F1 | **Good:** Low overhead, but slightly lower boundary separation on short queries. |
+| Language: TF-IDF + Naive Bayes | 180 MB | ~1 ms | 91.5% F1 | **Fair:** Very lightweight, but struggles with code-switching or mixed phrases. |
 | Language: XML-RoBERTa (Transformer) | 1.1 GB | ~85 ms | 99.1% F1 | **Poor:** Too heavy for simple language locks, increases cold-start times. |
 | **Emotion: DistilBERT Fine-tuned (Chosen)** | **268 MB** | **~40 ms** | **93.2% F1** | **Excellent:** High accuracy, lightweight enough to serve easily on CPU free-tiers. |
 | Emotion: RoBERTa-large (Fine-tuned) | 1.4 GB | ~280 ms | 94.8% F1 | **Poor:** Slow on CPU, forces GPU runtime dependencies in Docker. |
