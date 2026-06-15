@@ -144,11 +144,10 @@ To justify our architectural selections, we evaluated and compared different mod
 
 ## 🔗 Project Deliverables
 
-* **Backend Repo:** `[Your GitHub Repo Link]`
-* **Deployed API URL:** `https://huggingface.co/spaces/[username]/[space_name]`
-* **Frontend Repo:** `https://github.com/[username]/chatbot-frontend`
-* **Deployed Frontend URL:** `https://[username].github.io/chatbot-frontend/`
-
+* **Backend Repo:** [https://github.com/Hagar-Ghazi/Mental-Health-Mlops](https://github.com/Hagar-Ghazi/Mental-Health-Mlops)
+* **Deployed API URL:** [https://hagarghazi-serenity-backend.hf.space](https://hagarghazi-serenity-backend.hf.space)
+* **Frontend Repo:** [https://github.com/Hagar-Ghazi/Serenity--Mental-Health-Chatbot-Frontend](https://github.com/Hagar-Ghazi/Serenity--Mental-Health-Chatbot-Frontend)
+* **Deployed Frontend URL:** [https://hagar-ghazi.github.io/Serenity--Mental-Health-Chatbot-Frontend/](https://hagar-ghazi.github.io/Serenity--Mental-Health-Chatbot-Frontend/)
 
 ---
 
