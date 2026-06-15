@@ -43,7 +43,7 @@ def _log_pipeline_interaction(query: str, pipeline_output: dict) -> None:
             {
                 "excerpt": src.get("excerpt", ""),
                 "similarity": src.get("similarity", 0.0),
-                "topics": src.get("topics", [])
+                "topics": src.get("topics", []),
             }
             for src in pipeline_output.get("sources", [])
         ]
@@ -98,13 +98,13 @@ FALLBACK_GENERAL = (
 # EMOTION → TOPIC MAP (for intelligence heuristic & reranking)
 # ========================================================================
 EMOTION_TOPIC_MAP = {
-    "sadness":   ["depression", "grief_loss", "self_esteem", "suicidal", "loneliness"],
-    "fear":      ["anxiety", "trauma_ptsd", "stress", "sleep"],
-    "anger":     ["anger", "relationships", "stress"],
-    "love":      ["relationships", "self_esteem"],
-    "joy":       [],
-    "surprise":  [],
-    "uncertain": []
+    "sadness": ["depression", "grief_loss", "self_esteem", "suicidal", "loneliness"],
+    "fear": ["anxiety", "trauma_ptsd", "stress", "sleep"],
+    "anger": ["anger", "relationships", "stress"],
+    "love": ["relationships", "self_esteem"],
+    "joy": [],
+    "surprise": [],
+    "uncertain": [],
 }
 
 
@@ -112,54 +112,139 @@ EMOTION_TOPIC_MAP = {
 # QUICK-RESPONSE SYSTEM — Fast path, zero API calls, <1ms
 # ========================================================================
 
+
 def _normalize(text: str) -> str:
     """Lowercase, strip punctuation/emoji, collapse whitespace."""
     text = text.lower().strip()
-    text = re.sub(r"[^\w\s\u0600-\u06FF\u0900-\u097F\u0E00-\u0E7F\u3040-\u9FFF\u0400-\u04FF]", "", text)
+    text = re.sub(
+        r"[^\w\s\u0600-\u06FF\u0900-\u097F\u0E00-\u0E7F\u3040-\u9FFF\u0400-\u04FF]",
+        "",
+        text,
+    )
     return " ".join(text.split())
 
 
 _QUICK_PATTERNS: dict[str, dict[str, list[str]]] = {
     "greeting": {
         "en": [
-            "hi", "hello", "hey", "heyy", "heyyy", "howdy", "yo",
-            "good morning", "good afternoon", "good evening", "good night",
-            "morning", "evening", "greetings", "whats up", "sup", "hows it going",
-            "hi there", "hello there", "hey there", "how are you", "how r u", "how are u"
+            "hi",
+            "hello",
+            "hey",
+            "heyy",
+            "heyyy",
+            "howdy",
+            "yo",
+            "good morning",
+            "good afternoon",
+            "good evening",
+            "good night",
+            "morning",
+            "evening",
+            "greetings",
+            "whats up",
+            "sup",
+            "hows it going",
+            "hi there",
+            "hello there",
+            "hey there",
+            "how are you",
+            "how r u",
+            "how are u",
         ],
         "ar": [
-            "مرحبا", "مرحبه", "اهلا", "أهلا", "ازيك", "هلا", "هلا والله",
-            "السلام عليكم", "سلام عليكم", "سلام", "صباح الخير", "مساء الخير",
-            "صباح النور", "مساء النور", "كيف حالك", "كيفك", "شلونك", "كيف الحال",
-            "اهلا وسهلا", "أهلا وسهلا", "يا هلا", "هاي", "هالو"
-        ]
+            "مرحبا",
+            "مرحبه",
+            "اهلا",
+            "أهلا",
+            "ازيك",
+            "هلا",
+            "هلا والله",
+            "السلام عليكم",
+            "سلام عليكم",
+            "سلام",
+            "صباح الخير",
+            "مساء الخير",
+            "صباح النور",
+            "مساء النور",
+            "كيف حالك",
+            "كيفك",
+            "شلونك",
+            "كيف الحال",
+            "اهلا وسهلا",
+            "أهلا وسهلا",
+            "يا هلا",
+            "هاي",
+            "هالو",
+        ],
     },
     "gratitude": {
         "en": [
-            "thank you", "thanks", "thank u", "thx", "ty", "thanks a lot",
-            "thank you so much", "thanks so much", "much appreciated", "appreciate it"
+            "thank you",
+            "thanks",
+            "thank u",
+            "thx",
+            "ty",
+            "thanks a lot",
+            "thank you so much",
+            "thanks so much",
+            "much appreciated",
+            "appreciate it",
         ],
         "ar": [
-            "شكرا", "شكراً", "شكرا لك", "شكراً لك", "مشكور", "مشكورة",
-            "الله يعطيك العافية", "يعطيك العافية", "جزاك الله خيرا", "تسلم", "تسلمي"
-        ]
+            "شكرا",
+            "شكراً",
+            "شكرا لك",
+            "شكراً لك",
+            "مشكور",
+            "مشكورة",
+            "الله يعطيك العافية",
+            "يعطيك العافية",
+            "جزاك الله خيرا",
+            "تسلم",
+            "تسلمي",
+        ],
     },
     "goodbye": {
-        "en": ["bye", "goodbye", "good bye", "see you", "see ya", "take care", "bye bye"],
-        "ar": ["مع السلامة", "باي", "في أمان الله", "الله يحفظك", "إلى اللقاء", "سلام"]
+        "en": [
+            "bye",
+            "goodbye",
+            "good bye",
+            "see you",
+            "see ya",
+            "take care",
+            "bye bye",
+        ],
+        "ar": ["مع السلامة", "باي", "في أمان الله", "الله يحفظك", "إلى اللقاء", "سلام"],
     },
     "out_of_scope": {
         "en": [
-            "whats the weather", "tell me a joke", "what time is it", "write code",
-            "how to code", "weather today", "recipe for", "who won the game",
-            "sing a song", "make me a script", "generate code",
-            "what is the capital of", "capital of"
+            "whats the weather",
+            "tell me a joke",
+            "what time is it",
+            "write code",
+            "how to code",
+            "weather today",
+            "recipe for",
+            "who won the game",
+            "sing a song",
+            "make me a script",
+            "generate code",
+            "what is the capital of",
+            "capital of",
         ],
         "ar": [
-            "كيف الطقس", "كم الساعة", "احكيلي نكتة", "مين انت", "شو اسمك",
-            "اكتب كود", "برمجة", "طريقة عمل", "اخبار الرياضة", "قول نكتة"
-        ]
-    }
+            "كيف الطقس",
+            "كم الساعة",
+            "احكيلي نكتة",
+            "مين انت",
+            "شو اسمك",
+            "اكتب كود",
+            "برمجة",
+            "طريقة عمل",
+            "اخبار الرياضة",
+            "قول نكتة",
+        ],
+    },
 }
 
 # Pre-compute sorted list (longest-match-first) and set for O(1) exact match
@@ -196,7 +281,7 @@ def _detect_quick_response(text: str) -> Optional[Tuple[str, str]]:
             if remainder == filler:
                 break
             if remainder.startswith(filler + " "):
-                remainder = remainder[len(filler):].lstrip()
+                remainder = remainder[len(filler) :].lstrip()
                 break
         if not remainder:
             break
@@ -205,7 +290,7 @@ def _detect_quick_response(text: str) -> Optional[Tuple[str, str]]:
         for pat, lang, cat in _QUICK_ALL:
             if remainder == pat or remainder.startswith(pat + " "):
                 detected.append((cat, lang))
-                remainder = remainder[len(pat):].lstrip()
+                remainder = remainder[len(pat) :].lstrip()
                 matched = True
                 break
         if not matched:
@@ -239,33 +324,59 @@ def _get_time_period() -> str:
 
 _QUICK_RESPONSES: dict[str, dict[str, list[str]]] = {
     "greeting": {
-        "en": ["Hello! 😊 I'm really glad you're here — this is a safe space. What's on your mind today?"],
-        "ar": ["أهلًا بيك! 😊 مجرد إنك قررت تتكلم خطوة مهمة وشجاعة احكي براحتك وأنا هسمعك من غير أي حكم أو ضغط 🤗"],
-        "ar_returning": ["أهلًا بيك من جديد! 😊 سعيد إني بشوفك تاني إيه الأخبار من آخر مرة اتكلمنا؟ 💙"]
+        "en": [
+            "Hello! 😊 I'm really glad you're here — this is a safe space. What's on your mind today?"
+        ],
+        "ar": [
+            "أهلًا بيك! 😊 مجرد إنك قررت تتكلم خطوة مهمة وشجاعة احكي براحتك وأنا هسمعك من غير أي حكم أو ضغط 🤗"
+        ],
+        "ar_returning": [
+            "أهلًا بيك من جديد! 😊 سعيد إني بشوفك تاني إيه الأخبار من آخر مرة اتكلمنا؟ 💙"
+        ],
     },
     "gratitude": {
-        "en": ["You're so welcome! 💛 Remember, I'm always here whenever you need to talk."],
-        "ar": ["العفو! 😊 إنت أظهرت قوة حقيقية بإنك انفتحت وحكيت اعتني بنفسك ولا تتردد إنك ترجع في أي وقت. 💛"]
+        "en": [
+            "You're so welcome! 💛 Remember, I'm always here whenever you need to talk."
+        ],
+        "ar": [
+            "العفو! 😊 إنت أظهرت قوة حقيقية بإنك انفتحت وحكيت اعتني بنفسك ولا تتردد إنك ترجع في أي وقت. 💛"
+        ],
     },
     "goodbye": {
         "en": ["Take care of yourself! 💛 You're not alone in this."],
-        "ar": ["اعتني بنفسك! 💛 تذكر أنا هنا وقت ما تحتاج تحكي في أي وقت ما إنت لوحدك مع السلامة! 😊"]
+        "ar": [
+            "اعتني بنفسك! 💛 تذكر أنا هنا وقت ما تحتاج تحكي في أي وقت ما إنت لوحدك مع السلامة! 😊"
+        ],
     },
     "out_of_scope": {
-        "en": ["I wish I could help with that! 😊 My expertise is specifically in mental health support."],
-        "ar": ["أقدر فضولك! 😊 أنا متخصص في دعم الصحة النفسية والعاطفية فقط وما قدرش أساعدك فى هذا الموضوع بس لو شايل هم في قلبك أنا هسمعك. 💛"]
-    }
+        "en": [
+            "I wish I could help with that! 😊 My expertise is specifically in mental health support."
+        ],
+        "ar": [
+            "أقدر فضولك! 😊 أنا متخصص في دعم الصحة النفسية والعاطفية فقط وما قدرش أساعدك فى هذا الموضوع بس لو شايل هم في قلبك أنا هسمعك. 💛"
+        ],
+    },
 }
 
 _TIME_OPENERS = {
-    "en": {"morning": "Good morning! ☀️ ", "afternoon": "", "evening": "Good evening! 🌙 ", "night": "Hey, it's late — I hope you're taking care of yourself. "},
-    "ar": {"morning": "صباح الخير! ☀️ ", "afternoon": "", "evening": "مساء الخير! 🌙 ", "night": "الوقت متأخر — إن شاء الله بخير. "},
+    "en": {
+        "morning": "Good morning! ☀️ ",
+        "afternoon": "",
+        "evening": "Good evening! 🌙 ",
+        "night": "Hey, it's late — I hope you're taking care of yourself. ",
+    },
+    "ar": {
+        "morning": "صباح الخير! ☀️ ",
+        "afternoon": "",
+        "evening": "مساء الخير! 🌙 ",
+        "night": "الوقت متأخر — إن شاء الله بخير. ",
+    },
 }
 
 _CATEGORY_EMOTION = {
-    "greeting":     ("joy",      0.95),
-    "gratitude":    ("joy",      0.90),
-    "goodbye":      ("joy",      0.85),
+    "greeting": ("joy", 0.95),
+    "gratitude": ("joy", 0.90),
+    "goodbye": ("joy", 0.85),
     "out_of_scope": ("surprise", 0.70),
 }
 
@@ -292,13 +403,19 @@ def _quick_response(category: str, lang: str, is_returning: bool = False) -> str
 # INTELLIGENCE HEURISTIC — decides answer vs fallback based on retrieval quality
 # ========================================================================
 
-def _intelligence_heuristic(query: str, chunks: list, emotion: Optional[str] = None) -> dict:
+
+def _intelligence_heuristic(
+    query: str, chunks: list, emotion: Optional[str] = None
+) -> dict:
     """Evaluates retrieval quality and decides whether to use RAG chunks or fall back."""
     if not chunks:
         return {
-            "chunks_relevant": False, "relevant_chunk_indices": [],
-            "rewritten_query": query, "quality_score": 1,
-            "action": "fallback", "reasoning": "No chunks retrieved"
+            "chunks_relevant": False,
+            "relevant_chunk_indices": [],
+            "rewritten_query": query,
+            "quality_score": 1,
+            "action": "fallback",
+            "reasoning": "No chunks retrieved",
         }
 
     best_similarity = max(c["similarity"] for c in chunks)
@@ -331,10 +448,14 @@ def _intelligence_heuristic(query: str, chunks: list, emotion: Optional[str] = N
 
     if best_similarity >= 0.45 or (best_similarity >= 0.35 and topic_matches >= 1):
         action = "answer"
-        reasoning = f"Best similarity {best_similarity:.2f}, {topic_matches} topic matches"
+        reasoning = (
+            f"Best similarity {best_similarity:.2f}, {topic_matches} topic matches"
+        )
     else:
         action = "fallback"
-        reasoning = f"Weak similarity {best_similarity:.2f}, insufficient topic relevance"
+        reasoning = (
+            f"Weak similarity {best_similarity:.2f}, insufficient topic relevance"
+        )
 
     return {
         "chunks_relevant": action == "answer",
@@ -342,7 +463,7 @@ def _intelligence_heuristic(query: str, chunks: list, emotion: Optional[str] = N
         "rewritten_query": query,
         "quality_score": quality,
         "action": action,
-        "reasoning": reasoning
+        "reasoning": reasoning,
     }
 
 
@@ -350,12 +471,17 @@ def _intelligence_heuristic(query: str, chunks: list, emotion: Optional[str] = N
 # PROMPT BUILDER — constructs the full therapist system prompt
 # ========================================================================
 
+
 def _build_therapist_prompt(
-    query: str, chunks: list,
-    emotion: Optional[str] = None, emotion_conf: Optional[float] = None,
-    language: Optional[str] = None, response_style: Optional[str] = None,
-    crisis_flag: bool = False, prior_crisis: bool = False,
-    country: str = "Unknown"
+    query: str,
+    chunks: list,
+    emotion: Optional[str] = None,
+    emotion_conf: Optional[float] = None,
+    language: Optional[str] = None,
+    response_style: Optional[str] = None,
+    crisis_flag: bool = False,
+    prior_crisis: bool = False,
+    country: str = "Unknown",
 ) -> str:
     sections = [THERAPIST_BASE_PROMPT]
 
@@ -375,11 +501,14 @@ def _build_therapist_prompt(
         sections.append(f"Detected emotion: {emotion}")
 
     if language and language != "en":
-        sections.append(f"Language Instruction: Respond ENTIRELY and natively in {language}. Do NOT include English, Japanese, or any other languages.")
+        sections.append(
+            f"Language Instruction: Respond ENTIRELY and natively in {language}. Do NOT include English, Japanese, or any other languages."
+        )
 
     if chunks:
         sections.append(
-            "Clinical Knowledge:\n" + "\n".join([c["response"][:400] for c in chunks[:3]])
+            "Clinical Knowledge:\n"
+            + "\n".join([c["response"][:400] for c in chunks[:3]])
         )
 
     return "\n\n".join(sections)
@@ -388,6 +517,7 @@ def _build_therapist_prompt(
 # ========================================================================
 # NLP PIPELINE CLASS — main orchestration engine
 # ========================================================================
+
 
 class NLPPipeline:
     """
@@ -411,29 +541,29 @@ class NLPPipeline:
             if not GROQ_API_KEY:
                 raise ValueError("GROQ_API_KEY is not set.")
             from groq import Groq
+
             self._client = Groq(api_key=GROQ_API_KEY)
             self._groq_configured = True
 
-    def _call_therapist_llm(self, query: str, prompt: str, history: Optional[list] = None) -> str:
+    def _call_therapist_llm(
+        self, query: str, prompt: str, history: Optional[list] = None
+    ) -> str:
         """Calls Groq with system instruction, conversation history, and user query."""
         self._ensure_groq()
 
         messages = [{"role": "system", "content": prompt}]
-        
+
         # Convert session history
         if history:
             for msg in history[-12:]:
                 role = "user" if msg["role"] == "user" else "assistant"
                 messages.append({"role": role, "content": msg["content"]})
-                
+
         messages.append({"role": "user", "content": query})
 
         try:
             response = self._client.chat.completions.create(
-                model=GROQ_MODEL,
-                messages=messages,
-                temperature=0.75,
-                max_tokens=700
+                model=GROQ_MODEL, messages=messages, temperature=0.75, max_tokens=700
             )
             return response.choices[0].message.content.strip()
         except Exception as e:
@@ -443,11 +573,13 @@ class NLPPipeline:
     # ================================================================
     # RUN PIPELINE — main entry point
     # ================================================================
-    def run(self, query: str, session: SessionMemory, country: str = "Unknown") -> Dict[str, Any]:
-        t_start      = time.time()
-        timings      = {}
+    def run(
+        self, query: str, session: SessionMemory, country: str = "Unknown"
+    ) -> Dict[str, Any]:
+        t_start = time.time()
+        timings = {}
         prior_crisis = session.prior_crisis
-        history      = session.get_history()
+        history = session.get_history()
 
         # ──────────────────────────────────────────────────────
         # 🚨 FIRST LINE OF DEFENSE: hardcoded crisis signal check
@@ -467,17 +599,32 @@ class NLPPipeline:
                 # Out-of-scope immediate exit
                 if category == "out_of_scope":
                     answer = _quick_response(category, detected_lang)
-                    timings["quick_response_ms"] = round((time.time() - t_quick) * 1000, 1)
+                    timings["quick_response_ms"] = round(
+                        (time.time() - t_quick) * 1000, 1
+                    )
                     if session:
-                        session.add_turn(query, answer, "surprise", 0.70, detected_lang, "out_of_scope", False)
+                        session.add_turn(
+                            query,
+                            answer,
+                            "surprise",
+                            0.70,
+                            detected_lang,
+                            "out_of_scope",
+                            False,
+                        )
                     output = {
-                        "answer": answer, "sources": [], "emotion": "surprise",
-                        "emotion_conf": 0.70, "language": detected_lang,
-                        "intent": "out_of_scope", "routing": "direct",
-                        "crisis_flag": False, "action_taken": "out_of_scope_fallback",
+                        "answer": answer,
+                        "sources": [],
+                        "emotion": "surprise",
+                        "emotion_conf": 0.70,
+                        "language": detected_lang,
+                        "intent": "out_of_scope",
+                        "routing": "direct",
+                        "crisis_flag": False,
+                        "action_taken": "out_of_scope_fallback",
                         "quality_score": 5,
                         "latency_ms": round((time.time() - t_start) * 1000, 1),
-                        "timings": timings
+                        "timings": timings,
                     }
                     _log_pipeline_interaction(query, output)
                     return output
@@ -488,15 +635,28 @@ class NLPPipeline:
                 emotion, emotion_conf = _CATEGORY_EMOTION.get(category, ("joy", 0.90))
                 timings["quick_response_ms"] = round((time.time() - t_quick) * 1000, 1)
                 if session:
-                    session.add_turn(query, answer, emotion, emotion_conf, detected_lang, category, False)
+                    session.add_turn(
+                        query,
+                        answer,
+                        emotion,
+                        emotion_conf,
+                        detected_lang,
+                        category,
+                        False,
+                    )
                 output = {
-                    "answer": answer, "sources": [], "emotion": emotion,
-                    "emotion_conf": emotion_conf, "language": detected_lang,
-                    "intent": category, "routing": category,
-                    "crisis_flag": False, "action_taken": category,
+                    "answer": answer,
+                    "sources": [],
+                    "emotion": emotion,
+                    "emotion_conf": emotion_conf,
+                    "language": detected_lang,
+                    "intent": category,
+                    "routing": category,
+                    "crisis_flag": False,
+                    "action_taken": category,
                     "quality_score": 5,
                     "latency_ms": round((time.time() - t_start) * 1000, 1),
-                    "timings": timings
+                    "timings": timings,
                 }
                 _log_pipeline_interaction(query, output)
                 return output
@@ -505,18 +665,18 @@ class NLPPipeline:
         # Stage 1: PARALLEL Language + Emotion Detection
         # ──────────────────────────────────────────────────────
         t_parallel = time.time()
-        f_lang    = _executor.submit(language_detector.detect, query)
+        f_lang = _executor.submit(language_detector.detect, query)
         f_emotion = _executor.submit(emotion_classifier.classify, query)
 
         lang_result = f_lang.result()
-        language    = lang_result["prediction"]
+        language = lang_result["prediction"]
         if language not in ("en", "ar"):
             language = "en"
         timings["language_ms"] = round((time.time() - t_parallel) * 1000, 1)
 
         emotion_result = f_emotion.result()
-        emotion        = emotion_result["emotion"]
-        emotion_conf   = emotion_result["confidence"]
+        emotion = emotion_result["emotion"]
+        emotion_conf = emotion_result["confidence"]
         timings["emotion_ms"] = round((time.time() - t_parallel) * 1000, 1)
 
         # ──────────────────────────────────────────────────────
@@ -526,12 +686,20 @@ class NLPPipeline:
         intent_result = intent_classifier.classify(
             query, detected_emotion=emotion, detected_language=language
         )
-        routing          = intent_result.get("routing", "rag")
+        routing = intent_result.get("routing", "rag")
         extracted_intent = intent_result.get("intent", "asking_mental_health_question")
 
         # Crisis flag = hardcoded OR LLM-detected OR emotion risk
-        crisis_flag    = intent_result.get("crisis_flag", False) or has_hardcoded_crisis or emotion_result.get("risk_flag", False)
-        response_style = "crisis_intervention" if crisis_flag else intent_result.get("response_style", "empathetic_support")
+        crisis_flag = (
+            intent_result.get("crisis_flag", False)
+            or has_hardcoded_crisis
+            or emotion_result.get("risk_flag", False)
+        )
+        response_style = (
+            "crisis_intervention"
+            if crisis_flag
+            else intent_result.get("response_style", "empathetic_support")
+        )
 
         intent = "asking_mental_health_question" if crisis_flag else extracted_intent
         timings["intent_ms"] = round((time.time() - t_intent) * 1000, 1)
@@ -539,15 +707,31 @@ class NLPPipeline:
         # ──────────────────────────────────────────────────────
         # Stage 3a: OUT-OF-SCOPE EXIT (post-intent)
         # ──────────────────────────────────────────────────────
-        if (intent == "out_of_scope" or routing == "out_of_scope"):
+        if intent == "out_of_scope" or routing == "out_of_scope":
             answer = _quick_response("out_of_scope", language)
             if session:
-                session.add_turn(query, answer, emotion, emotion_conf, language, "out_of_scope", False)
+                session.add_turn(
+                    query,
+                    answer,
+                    emotion,
+                    emotion_conf,
+                    language,
+                    "out_of_scope",
+                    False,
+                )
             output = {
-                "answer": answer, "sources": [], "emotion": emotion, "emotion_conf": emotion_conf,
-                "language": language, "intent": "out_of_scope", "routing": "direct",
-                "crisis_flag": False, "action_taken": "out_of_scope_fallback", "quality_score": 5,
-                "latency_ms": round((time.time() - t_start) * 1000, 1), "timings": timings
+                "answer": answer,
+                "sources": [],
+                "emotion": emotion,
+                "emotion_conf": emotion_conf,
+                "language": language,
+                "intent": "out_of_scope",
+                "routing": "direct",
+                "crisis_flag": False,
+                "action_taken": "out_of_scope_fallback",
+                "quality_score": 5,
+                "latency_ms": round((time.time() - t_start) * 1000, 1),
+                "timings": timings,
             }
             _log_pipeline_interaction(query, output)
             return output
@@ -558,19 +742,33 @@ class NLPPipeline:
         if routing == "direct" and not (crisis_flag or prior_crisis):
             t_llm = time.time()
             prompt = _build_therapist_prompt(
-                query, [], emotion, emotion_conf, language,
-                response_style, country=country
+                query,
+                [],
+                emotion,
+                emotion_conf,
+                language,
+                response_style,
+                country=country,
             )
             answer = self._call_therapist_llm(query, prompt, history)
             timings["therapist_ms"] = round((time.time() - t_llm) * 1000, 1)
             if session:
-                session.add_turn(query, answer, emotion, emotion_conf, language, intent, False)
+                session.add_turn(
+                    query, answer, emotion, emotion_conf, language, intent, False
+                )
             output = {
-                "answer": answer, "sources": [], "emotion": emotion,
-                "emotion_conf": emotion_conf, "language": language,
-                "intent": intent, "routing": "direct",
-                "crisis_flag": False, "action_taken": "direct", "quality_score": 5,
-                "latency_ms": round((time.time() - t_start) * 1000, 1), "timings": timings
+                "answer": answer,
+                "sources": [],
+                "emotion": emotion,
+                "emotion_conf": emotion_conf,
+                "language": language,
+                "intent": intent,
+                "routing": "direct",
+                "crisis_flag": False,
+                "action_taken": "direct",
+                "quality_score": 5,
+                "latency_ms": round((time.time() - t_start) * 1000, 1),
+                "timings": timings,
             }
             _log_pipeline_interaction(query, output)
             return output
@@ -591,7 +789,7 @@ class NLPPipeline:
             final_chunks = chunks
             intel = {"quality_score": 5, "reasoning": "Crisis forced"}
         else:
-            intel  = _intelligence_heuristic(query, chunks, emotion)
+            intel = _intelligence_heuristic(query, chunks, emotion)
             action = intel.get("action", "answer")
 
             if action == "fallback" and chunks:
@@ -608,30 +806,45 @@ class NLPPipeline:
         # ──────────────────────────────────────────────────────
         t_llm = time.time()
         prompt = _build_therapist_prompt(
-            query, final_chunks, emotion, emotion_conf, language,
-            response_style, crisis_flag or (action == "crisis"),
-            prior_crisis, country
+            query,
+            final_chunks,
+            emotion,
+            emotion_conf,
+            language,
+            response_style,
+            crisis_flag or (action == "crisis"),
+            prior_crisis,
+            country,
         )
         answer = self._call_therapist_llm(query, prompt, history)
         timings["therapist_ms"] = round((time.time() - t_llm) * 1000, 1)
 
         # Build sources list for API response
-        sources = [
-            {
-                "excerpt": c["context"][:80] + "...",
-                "similarity": c["similarity"],
-                "topics": c["topics"],
-                "risk_level": c["risk_level"]
-            }
-            for c in final_chunks
-        ] if final_chunks else []
+        sources = (
+            [
+                {
+                    "excerpt": c["context"][:80] + "...",
+                    "similarity": c["similarity"],
+                    "topics": c["topics"],
+                    "risk_level": c["risk_level"],
+                }
+                for c in final_chunks
+            ]
+            if final_chunks
+            else []
+        )
 
         # Update session memory
         if session:
             session.add_turn(
-                query, answer, emotion, emotion_conf, language,
-                intent, crisis_flag,
-                topics=[t for c in final_chunks for t in c.get("topics", [])]
+                query,
+                answer,
+                emotion,
+                emotion_conf,
+                language,
+                intent,
+                crisis_flag,
+                topics=[t for c in final_chunks for t in c.get("topics", [])],
             )
 
         try:
@@ -640,13 +853,18 @@ class NLPPipeline:
             quality_score = 3
 
         output = {
-            "answer": answer, "sources": sources,
-            "emotion": emotion, "emotion_conf": emotion_conf,
-            "language": language, "intent": intent, "routing": "rag",
+            "answer": answer,
+            "sources": sources,
+            "emotion": emotion,
+            "emotion_conf": emotion_conf,
+            "language": language,
+            "intent": intent,
+            "routing": "rag",
             "crisis_flag": crisis_flag,
-            "action_taken": action, "quality_score": quality_score,
+            "action_taken": action,
+            "quality_score": quality_score,
             "latency_ms": round((time.time() - t_start) * 1000, 1),
-            "timings": timings
+            "timings": timings,
         }
         _log_pipeline_interaction(query, output)
         return output

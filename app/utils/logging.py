@@ -8,11 +8,12 @@ LOG_DIR = BASE_DIR / "logs"
 LOG_DIR.mkdir(exist_ok=True)
 LOG_FILE = LOG_DIR / "app.log"
 
+
 def setup_logging():
     """Initializes standard Python logging with stdout and file handlers."""
     logger = logging.getLogger("app_logger")
     logger.setLevel(logging.INFO)
-    
+
     # Avoid duplicate handlers if setup is called multiple times (e.g. during reload)
     if logger.handlers:
         return logger
@@ -20,7 +21,7 @@ def setup_logging():
     # Log Formatter: [Timestamp] [LogLevel] [File:Line] - Message
     formatter = logging.Formatter(
         "[%(asctime)s] %(levelname)s [%(filename)s:%(lineno)d] - %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S"
+        datefmt="%Y-%m-%d %H:%M:%S",
     )
 
     # Console Handler (writes to stdout)
@@ -39,6 +40,7 @@ def setup_logging():
         print(f"Warning: Could not create log file handler: {e}", file=sys.stderr)
 
     return logger
+
 
 # Initialize logger immediately
 app_logger = setup_logging()

@@ -13,11 +13,13 @@ EMOTION_TOPIC_MAP = {
     "love": ["relationships", "self_esteem"],
     "joy": [],
     "surprise": [],
-    "uncertain": []
+    "uncertain": [],
 }
+
 
 class RAGService:
     """Lazy loader and wrapper for Qdrant vector search and emotion-based context reranking."""
+
     def __init__(self):
         self._embed_model = None
         self._qdrant_client = None
@@ -25,10 +27,16 @@ class RAGService:
 
     def _load(self):
         if not self._is_loaded:
-            self._embed_model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
+            self._embed_model = SentenceTransformer(
+                "sentence-transformers/all-MiniLM-L6-v2"
+            )
             if not QDRANT_URL or not QDRANT_API_KEY:
-                raise ValueError("Qdrant URL or API Key is missing in environment variables.")
-            self._qdrant_client = QdrantClient(url=QDRANT_URL, api_key=QDRANT_API_KEY, timeout=60)
+                raise ValueError(
+                    "Qdrant URL or API Key is missing in environment variables."
+                )
+            self._qdrant_client = QdrantClient(
+                url=QDRANT_URL, api_key=QDRANT_API_KEY, timeout=60
+            )
             self._is_loaded = True
 
     def _embed(self, text: str) -> List[float]:
@@ -43,10 +51,12 @@ class RAGService:
             return 5
         return 7
 
-    def retrieve_and_rerank(self, query: str, emotion: Optional[str] = None) -> List[Dict[str, Any]]:
+    def retrieve_and_rerank(
+        self, query: str, emotion: Optional[str] = None
+    ) -> List[Dict[str, Any]]:
         self._load()
         top_k = self._adaptive_top_k(query)
-        
+
         try:
             vector = self._embed(query)
             results = self._qdrant_client.query_points(
@@ -54,21 +64,23 @@ class RAGService:
                 query=vector,
                 limit=top_k,
                 with_payload=True,
-                score_threshold=SIMILARITY_GATE
+                score_threshold=SIMILARITY_GATE,
             ).points
-            
+
             chunks = []
             for r in results:
                 payload = r.payload or {}
-                chunks.append({
-                    "context": payload.get("context", ""),
-                    "response": payload.get("response", ""),
-                    "topics": payload.get("topics", []),
-                    "risk_level": payload.get("risk_level", "low"),
-                    "quality_score": payload.get("quality_score", 1),
-                    "has_empathy": payload.get("has_empathy", False),
-                    "similarity": round(float(r.score), 4)
-                })
+                chunks.append(
+                    {
+                        "context": payload.get("context", ""),
+                        "response": payload.get("response", ""),
+                        "topics": payload.get("topics", []),
+                        "risk_level": payload.get("risk_level", "low"),
+                        "quality_score": payload.get("quality_score", 1),
+                        "has_empathy": payload.get("has_empathy", False),
+                        "similarity": round(float(r.score), 4),
+                    }
+                )
 
             # Emotion Reranking heuristic
             if emotion and chunks:
@@ -77,18 +89,28 @@ class RAGService:
                     # Rerank by similarity score + boost for matching topics + boost for empathy
                     chunks = sorted(
                         chunks,
-                        key=lambda c: c["similarity"] 
-                            + sum(0.08 for t in c.get("topics", []) if t in priority_topics)
-                            + (0.05 if c.get("has_empathy") else 0),
-                        reverse=True
+                        key=lambda c: (
+                            c["similarity"]
+                            + sum(
+                                0.08
+                                for t in c.get("topics", [])
+                                if t in priority_topics
+                            )
+                            + (0.05 if c.get("has_empathy") else 0)
+                        ),
+                        reverse=True,
                     )
             return chunks
 
         except Exception as e:
             # Return empty if Qdrant fails, allowing system to fallback gracefully
             import logging
-            logging.getLogger("app_logger").error(f"Qdrant Retrieval Failed: {e}", exc_info=True)
+
+            logging.getLogger("app_logger").error(
+                f"Qdrant Retrieval Failed: {e}", exc_info=True
+            )
             return []
+
 
 # Global single instance
 rag_service = RAGService()

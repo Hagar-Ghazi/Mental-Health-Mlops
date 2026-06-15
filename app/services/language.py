@@ -2,8 +2,10 @@ import joblib
 from typing import Dict, Any
 from app.config import LANGUAGE_DETECTOR_PATH
 
+
 class LanguageDetector:
     """Lazy loader and wrapper for the scikit-learn Language Detector model."""
+
     def __init__(self):
         self._model = None
         self._vectorizer = None
@@ -15,8 +17,10 @@ class LanguageDetector:
     def _load(self):
         if not self._is_loaded:
             if not LANGUAGE_DETECTOR_PATH.exists():
-                raise FileNotFoundError(f"Language detector model not found at {LANGUAGE_DETECTOR_PATH}")
-            
+                raise FileNotFoundError(
+                    f"Language detector model not found at {LANGUAGE_DETECTOR_PATH}"
+                )
+
             artifacts = joblib.load(LANGUAGE_DETECTOR_PATH)
             self._model = artifacts["model"]
             self._vectorizer = artifacts["vectorizer"]
@@ -35,14 +39,19 @@ class LanguageDetector:
         proba = self._model.predict_proba(features)[0]
         confidence = float(proba.max())
 
-        lang_name = self._language_meta[prediction][0] if prediction in self._language_meta else str(prediction)
+        lang_name = (
+            self._language_meta[prediction][0]
+            if prediction in self._language_meta
+            else str(prediction)
+        )
 
         return {
-            "prediction": prediction,       # e.g. "en", "ar"
-            "lang_name": lang_name,          # e.g. "English", "Arabic"
+            "prediction": prediction,  # e.g. "en", "ar"
+            "lang_name": lang_name,  # e.g. "English", "Arabic"
             "confidence": round(confidence, 4),
-            "trusted": not (is_short and confidence < self._confidence_threshold)
+            "trusted": not (is_short and confidence < self._confidence_threshold),
         }
+
 
 # Global single instance
 language_detector = LanguageDetector()

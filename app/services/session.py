@@ -2,14 +2,17 @@ import uuid
 from datetime import datetime, timezone
 from typing import Optional, List, Dict, Any
 
+
 def utcnow() -> datetime:
     return datetime.now(timezone.utc)
+
 
 class SessionMemory:
     """
     Manages state and history for a single chat session.
     Keeps a sliding window of the last 6 turns (12 messages) of history.
     """
+
     def __init__(self, session_id: str):
         self.session_id: str = session_id
         self.history: List[Dict[str, str]] = []
@@ -29,7 +32,7 @@ class SessionMemory:
         language: Optional[str] = None,
         intent: Optional[str] = None,
         crisis_flag: bool = False,
-        topics: Optional[List[str]] = None
+        topics: Optional[List[str]] = None,
     ) -> None:
         self.history.append({"role": "user", "content": user_message})
         self.history.append({"role": "assistant", "content": assistant_response})
@@ -63,11 +66,13 @@ class SessionMemory:
             "emotion_history": self.emotion_history,
             "topics_discussed": self.topics_discussed,
             "started_at": self.started_at.isoformat(),
-            "last_active": self.last_active.isoformat()
+            "last_active": self.last_active.isoformat(),
         }
+
 
 class SessionStore:
     """In-memory dictionary mapping session_id (e.g. Client IP or UUID) to SessionMemory."""
+
     def __init__(self):
         self._sessions: Dict[str, SessionMemory] = {}
 
@@ -83,6 +88,7 @@ class SessionStore:
 
     def active_count(self) -> int:
         return len(self._sessions)
+
 
 # Global store instance
 session_store = SessionStore()

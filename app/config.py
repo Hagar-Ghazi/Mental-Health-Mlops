@@ -15,7 +15,9 @@ DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./mental_health.db")
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 HF_TOKEN = os.getenv("HF_TOKEN")
-HF_MODEL_NAME = os.getenv("HF_MODEL_NAME", "HagarGhazi/emotion-classifier-mental-health")
+HF_MODEL_NAME = os.getenv(
+    "HF_MODEL_NAME", "HagarGhazi/emotion-classifier-mental-health"
+)
 QDRANT_URL = os.getenv("QDRANT_URL")
 QDRANT_API_KEY = os.getenv("QDRANT_API_KEY")
 
@@ -32,5 +34,7 @@ INTENT_ARTIFACTS_DIR = ARTIFACTS_DIR / "intent_classifier"
 
 # OpenTelemetry & Observability Config
 ENABLE_TELEMETRY = os.getenv("ENABLE_TELEMETRY", "False").lower() in ("true", "1", "t")
-OTEL_EXPORTER_OTLP_ENDPOINT = os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://localhost:4318")
+OTEL_EXPORTER_OTLP_ENDPOINT = os.getenv(
+    "OTEL_EXPORTER_OTLP_ENDPOINT", "http://localhost:4318"
+)
 OTEL_SERVICE_NAME = os.getenv("OTEL_SERVICE_NAME", "serenity-chatbot-backend")

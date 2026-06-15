@@ -11,6 +11,7 @@ _request_history: Dict[str, List[float]] = defaultdict(list)
 RATE_LIMIT_WINDOW_SECONDS = 60.0
 RATE_LIMIT_MAX_REQUESTS = 20
 
+
 async def rate_limiter_middleware(request: Request, call_next):
     """Custom middleware to rate limit request traffic to /chat and /feedback.
 
@@ -29,7 +30,7 @@ async def rate_limiter_middleware(request: Request, call_next):
         client_ip = request.client.host if request.client else "unknown"
 
     now = time.time()
-    
+
     # Prune timestamps outside of the sliding window
     timestamps = _request_history[client_ip]
     active_timestamps = [t for t in timestamps if now - t < RATE_LIMIT_WINDOW_SECONDS]
@@ -38,10 +39,12 @@ async def rate_limiter_middleware(request: Request, call_next):
     if len(active_timestamps) >= RATE_LIMIT_MAX_REQUESTS:
         return JSONResponse(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-            content={"detail": "You're sending messages too quickly. Please wait a moment and try again."}
+            content={
+                "detail": "You're sending messages too quickly. Please wait a moment and try again."
+            },
         )
 
     # Log timestamp and proceed
     _request_history[client_ip].append(now)
-    
+
     return await call_next(request)
