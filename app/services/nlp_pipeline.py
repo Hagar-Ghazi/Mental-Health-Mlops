@@ -26,7 +26,7 @@ Your core principles — never break these:
 3. USE THEIR EXACT WORDS.
 4. NEVER MINIMIZE.
 5. ONE QUESTION AT THE END.
-6. LENGTH AND TONE (3 to 5 paragraphs).
+6. LENGTH AND TONE: Keep your response warm, conversational, and concise (1 to 2 short paragraphs).
 7. LANGUAGE & CULTURAL STYLE:
     - Always respond in the exact language the user used.
     - If the user writes in Arabic, respond in warm, natural Egyptian Arabic (عامية مصرية بسيطة وواضحة).
@@ -179,7 +179,7 @@ class NLPPipeline:
         crisis_flag = intent_res.get("crisis_flag", False) or emotion_res.get("risk_flag", False)
         
         # 4. Out-of-Scope Fallback handling
-        if intent == "out_of_scope" and not (crisis_flag or prior_crisis):
+        if intent == "out_of_scope" and not crisis_flag:
             response_text = random.choice(_QUICK_RESPONSES["out_of_scope"][lang_code])
             session.add_turn(
                 user_message=query,
@@ -213,11 +213,15 @@ class NLPPipeline:
         prompt_sections = [THERAPIST_BASE_PROMPT]
         
         # Crisis warning injection
-        if crisis_flag or prior_crisis:
+        if crisis_flag:
             hotline_info = get_hotline(country)
             prompt_sections.append(
                 "⚠ CRISIS CONTEXT ACTIVE\nInclude crisis helpline details natively at the end:\n" +
                 CRISIS_RESOURCES_TEMPLATE[lang_code].format(**hotline_info)
+            )
+        elif prior_crisis:
+            prompt_sections.append(
+                "⚠ PRIOR CRISIS CONTEXT: The user recently expressed thoughts of self-harm. Maintain extra warmth, safety, and gentleness."
             )
         
         if emotion:
@@ -234,7 +238,7 @@ class NLPPipeline:
         response_text = self._call_therapist_llm(query, full_prompt, history)
 
         # 7. Append Crisis Resources to final answer if LLM failed to attach it
-        if (crisis_flag or prior_crisis) and "https://www.befrienders.org" not in response_text:
+        if crisis_flag and "https://www.befrienders.org" not in response_text:
             hotline_info = get_hotline(country)
             response_text += CRISIS_RESOURCES_TEMPLATE[lang_code].format(**hotline_info)
 
