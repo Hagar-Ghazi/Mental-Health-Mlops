@@ -28,6 +28,7 @@ def test_pipeline_quick_response_routing():
     assert len(result["sources"]) == 0
     assert "Safeness" not in result["answer"] # should use greeting text
 
+
 def test_rag_reranking_logic(monkeypatch):
     # Test that rag_service correctly boost matches for priority topics
     # Mock embedding and Qdrant call
@@ -51,6 +52,7 @@ def test_rag_reranking_logic(monkeypatch):
         }
     ]
     
+
     # Mock the Qdrant retrieval method
     def mock_query(*args, **kwargs):
         class MockPoint:
@@ -65,11 +67,13 @@ def test_rag_reranking_logic(monkeypatch):
     class MockQdrantClient:
         def query_points(self, *args, **kwargs):
             return mock_query()
-            
+
+
     # Assign MockQdrantClient directly to avoid AttributeError
     rag_service._qdrant_client = MockQdrantClient()
     monkeypatch.setattr(rag_service, "_load", lambda: None)
     
+
     # Restore the original retrieve_and_rerank method since it was mocked globally in conftest.py
     from app.services.rag import RAGService
     monkeypatch.setattr(
@@ -78,9 +82,9 @@ def test_rag_reranking_logic(monkeypatch):
         RAGService.retrieve_and_rerank.__get__(rag_service, RAGService)
     )
     
-    # With sadness, the second document should be boosted to first place due to "loneliness" topic match (boost = 0.08) and "has_empathy" boost = 0.05
+    # With sadness the second document should be boosted to first place due to "loneliness" topic match (boost = 0.08) and "has_empathy" boost = 0.05
     # Document 1 score: 0.50 + 0 = 0.50
-    # Document 2 score: 0.45 + 0.08 + 0.05 = 0.58 (Reranked first!)
+    # Document 2 score: 0.45 + 0.08 + 0.05 = 0.58 (Reranked first)
     reranked = rag_service.retrieve_and_rerank("lonely", emotion="sadness")
     assert len(reranked) == 2
     assert "loneliness counselor" in reranked[0]["context"]

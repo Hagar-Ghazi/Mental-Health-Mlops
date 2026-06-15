@@ -19,7 +19,7 @@ QDRANT_URL = os.getenv("QDRANT_URL")
 QDRANT_API_KEY = os.getenv("QDRANT_API_KEY")
 
 # Groq Model name (using a standard llama fallback if the instruction model is unavailable)
-GROQ_MODEL = os.getenv("GROQ_MODEL", "llama3-70b-8192")
+GROQ_MODEL = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
 
 # Paths to Local Model Artifacts
 ARTIFACTS_DIR = BASE_DIR / "app" / "artifacts"

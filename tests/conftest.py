@@ -58,6 +58,7 @@ def client(db_session):
         yield test_client
     app.dependency_overrides.clear()
 
+
 # Mocks for NLP services to prevent network calls during testing
 @pytest.fixture(autouse=True)
 def mock_external_calls(monkeypatch):
@@ -73,6 +74,7 @@ def mock_external_calls(monkeypatch):
         }
     monkeypatch.setattr(language_detector, "detect", mock_detect)
 
+
     # Mock emotion classification
     from app.services.emotion import emotion_classifier
     def mock_classify(text, threshold=0.40):
@@ -83,6 +85,7 @@ def mock_external_calls(monkeypatch):
             "tone": "Encouraging, celebratory, engaging"
         }
     monkeypatch.setattr(emotion_classifier, "classify", mock_classify)
+
 
     # Mock Groq classifier completion
     from app.services.intent import intent_classifier
@@ -95,6 +98,7 @@ def mock_external_calls(monkeypatch):
             "confidence": "high"
         }
     monkeypatch.setattr(intent_classifier, "classify", mock_intent_classify)
+
 
     # Mock Qdrant retrieval
     from app.services.rag import rag_service
@@ -111,6 +115,7 @@ def mock_external_calls(monkeypatch):
             }
         ]
     monkeypatch.setattr(rag_service, "retrieve_and_rerank", mock_retrieve)
+
 
     # Mock Groq Chat completions in nlp_pipeline
     from app.services.nlp_pipeline import nlp_pipeline
