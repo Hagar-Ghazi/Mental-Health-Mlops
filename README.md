@@ -160,8 +160,8 @@ To justify our architectural selections, we evaluated and compared different mod
 
 * **Backend Repo:** [https://github.com/Hagar-Ghazi/Mental-Health-Mlops](https://github.com/Hagar-Ghazi/Mental-Health-Mlops)
 * **Deployed API URL:** [https://hagarghazi-serenity-backend.hf.space](https://hagarghazi-serenity-backend.hf.space)
-* **Frontend Repo:** [https://github.com/Hagar-Ghazi/Serenity--Mental-Health-Chatbot-Frontend](https://github.com/Hagar-Ghazi/Serenity--Mental-Health-Chatbot-Frontend)
-* **Deployed Frontend URL:** [https://hagar-ghazi.github.io/Serenity--Mental-Health-Chatbot-Frontend/](https://hagar-ghazi.github.io/Serenity--Mental-Health-Chatbot-Frontend/)
+* **Frontend Repo:** [https://github.com/Hagar-Ghazi/Serenity-Mental-Health-Chatbot-Frontend](https://github.com/Hagar-Ghazi/Serenity-Mental-Health-Chatbot-Frontend)
+* **Deployed Frontend URL:** [https://hagar-ghazi.github.io/Serenity-Mental-Health-Chatbot-Frontend/](https://hagar-ghazi.github.io/Serenity-Mental-Health-Chatbot-Frontend/)
 
 ---
 
