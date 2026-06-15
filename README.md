@@ -140,6 +140,12 @@ To justify our architectural selections, we evaluated and compared different mod
 | Local CPU: Llama 3 8B (llama.cpp) | 8B | Local | ~4,800 ms | $0.00 |
 | Cloud API: GPT-4o | Cloud | OpenAI | ~350 ms | $0.015 |
 
+### 3. RAG Vector Embedding Models
+| Embedding Model / Pipeline Component | Model Size | Vector Dim | Avg Latency | MLOps Suitability |
+| :--- | :--- | :--- | :--- | :--- |
+| **all-MiniLM-L6-v2 (Chosen)** | **90 MB** | **384** | **~5 ms** | **Excellent:** Run locally on CPU, zero cost, extremely low latency. |
+| text-embedding-3-small | Cloud API | 1536 | ~120 ms | **Fair:** High quality, but introduces network latency and external billing dependency. |
+
 ---
 
 ## 🔗 Project Deliverables
