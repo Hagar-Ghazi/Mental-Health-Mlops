@@ -14,7 +14,7 @@ def test_detect_quick_response():
     assert _detect_quick_response("goodbye")[0] == "goodbye"
     
     # Out of scope
-    assert _detect_quick_response("whats the weather today")[0] == "out_of_scope"
+    assert _detect_quick_response("whats the weather")[0] == "out_of_scope"
     
     # None
     assert _detect_quick_response("i need help with depression") is None

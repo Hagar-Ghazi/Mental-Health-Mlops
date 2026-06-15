@@ -43,6 +43,11 @@ class IntentClassifier:
             )
             self._is_loaded = True
 
+    def has_crisis_signals(self, text: str) -> bool:
+        self._load()
+        text_lower = text.lower().strip()
+        return any(signal in text_lower for signal in self._crisis_signals)
+
     def classify(self, text: str, detected_emotion: Optional[str] = None, detected_language: Optional[str] = None) -> Dict[str, Any]:
         self._load()
         
