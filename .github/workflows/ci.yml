@@ -92,12 +92,26 @@ jobs:
           HF_USERNAME: ${{ secrets.HF_USERNAME }}
           HF_SPACE_NAME: ${{ secrets.HF_SPACE_NAME }}
         run: |
-          # Configure Git credentials
-          git config --global user.email "bot@github.com"
-          git config --global user.name "GitHub CI Bot"
-          git config --global lfs.allowincompletepush true
+          # 1. Create a clean deploy directory
+          mkdir ../deploy-space
           
-          # Push the local branch that triggered the build to the main branch of HF Spaces
-          LOCAL_BRANCH=$(git branch --show-current)
-          git push --force https://$HF_USERNAME:$HF_TOKEN@huggingface.co/spaces/$HF_USERNAME/$HF_SPACE_NAME $LOCAL_BRANCH:main
+          # 2. Copy everything from workspace to deploy directory
+          cp -r . ../deploy-space/
+          
+          # 3. Clean up the deploy directory
+          cd ../deploy-space
+          rm -rf .git
+          rm -rf assets
+          
+          # 4. Initialize fresh git repo
+          git init
+          git config user.email "bot@github.com"
+          git config user.name "GitHub CI Bot"
+          git config lfs.allowincompletepush true
+          
+          # 5. Commit and force push to Hugging Face Spaces
+          git add -A
+          git commit -m "Deploy to Hugging Face Spaces"
+          git push --force https://$HF_USERNAME:$HF_TOKEN@huggingface.co/spaces/$HF_USERNAME/$HF_SPACE_NAME HEAD:main
+
 
