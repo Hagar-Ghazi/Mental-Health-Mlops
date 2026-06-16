@@ -1,3 +1,13 @@
+---
+title: Serenity Backend
+emoji: 🪐
+colorFrom: blue
+colorTo: indigo
+sdk: docker
+app_port: 7860
+pinned: false
+---
+
 
 # 🪐 Serenity Chatbot: High-Performance Empathetic Mental Health AI Support Platform
 
