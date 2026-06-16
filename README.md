@@ -22,7 +22,7 @@ Below is the end-to-end system demonstration showing the chatbot frontend intera
 <div align="center">
   <h3>🎬 System Walkthrough Demo</h3>
   <video width="720" height="405" controls>
-    <source src="assets/serenity-mental-health-chatbot-video.webm" type="video/webm">
+    <source src="https://github.com/user-attachments/assets/f257caba-bc62-4cb7-9894-f5149b749bc1" type="video/webm">
     Your browser does not support the video tag.
   </video>
 </div>
