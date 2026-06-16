@@ -64,11 +64,8 @@ def _log_pipeline_interaction(query: str, pipeline_output: dict) -> None:
         logger.warning(f"Pipeline Logger Error: {log_err}")
 
 
-# ========================================================================
-# THREAD POOL — removed, we now use fastapi.concurrency.run_in_threadpool
-# ========================================================================
 
-
+# THREAD POOL removed we now use fastapi.concurrency.run_in_threadpool
 # ========================================================================
 # THERAPIST SYSTEM PROMPT — matches original (3-5 paragraphs)
 # ========================================================================
