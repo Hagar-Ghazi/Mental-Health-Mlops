@@ -109,9 +109,26 @@ jobs:
           git config user.name "GitHub CI Bot"
           git config lfs.allowincompletepush true
           
-          # 5. Commit and force push to Hugging Face Spaces
+          # 5. Commit and force push to Hugging Face Spaces with retries
           git add -A
           git commit -m "Deploy to Hugging Face Spaces"
-          git push --force https://$HF_USERNAME:$HF_TOKEN@huggingface.co/spaces/$HF_USERNAME/$HF_SPACE_NAME HEAD:main
+          
+          echo "Pushing to Hugging Face Spaces..."
+          n=0
+          max_retries=5
+          delay=10
+          until [ "$n" -ge "$max_retries" ]
+          do
+             git push --force https://$HF_USERNAME:$HF_TOKEN@huggingface.co/spaces/$HF_USERNAME/$HF_SPACE_NAME HEAD:main && break
+             n=$((n+1))
+             echo "Push failed. Attempt $n/$max_retries. Retrying in $delay seconds..."
+             sleep $delay
+             delay=$((delay * 2))
+          done
+          
+          if [ "$n" -ge "$max_retries" ]; then
+             echo "Error: Push failed after $max_retries attempts."
+             exit 1
+          fi
 
 
