@@ -19,8 +19,16 @@ Serenity is an empathetic mental health support chatbot system designed to deliv
 
 Below is the end-to-end system demonstration showing the chatbot frontend interacting in real-time handling diverse intents (greetings, mental health queries, out-of-scope requests) receiving user feedback and visualizing operational telemetry in Axiom.
 
-▶️ **Watch the demo video:**  
-https://github.com/user-attachments/assets/f257caba-bc62-4cb7-9894-f5149b749bc1
+<div align="center">
+
+### 🎬 System Walkthrough Demo
+
+<a href="https://github.com/user-attachments/assets/f257caba-bc62-4cb7-9894-f5149b749bc1">
+  ▶️ Click here to watch the demo
+</a>
+
+</div>
+
 
 ---
 
