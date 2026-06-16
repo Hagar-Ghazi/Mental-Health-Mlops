@@ -1,3 +1,13 @@
+---
+title: Serenity Backend
+emoji: 🪐
+colorFrom: blue
+colorTo: indigo
+sdk: docker
+app_port: 7860
+pinned: false
+---
+
 # 🪐 Serenity Chatbot: High-Performance Empathetic Mental Health AI Support Platform
 
 Serenity is an empathetic mental health support chatbot system designed to deliver immediate, clinically guided and safe conversational assistance to users. This repository houses the production-ready **Asynchronous FastAPI Backend API** containerized with Docker monitored via OpenTelemetry and Axiom and deployed automatically through a GitHub Actions CI/CD pipeline.
