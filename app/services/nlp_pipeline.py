@@ -1170,36 +1170,123 @@ _FILLER_WORDS = {"and", "there", "ya", "yo", "يا", "و", "so", "very", "really
 # ========================================================================
 _OOS_KEYWORDS_EN: set[str] = {
     # Food & cooking
-    "pizza", "recipe", "cook", "cooking", "bake", "baking", "ingredient",
-    "ingredients", "flour", "dough", "yeast", "oven", "meal", "food",
-    "restaurant", "cafe", "breakfast", "lunch", "dinner", "dessert",
-    "sandwich", "pasta", "burger", "sushi", "chicken breast", "how to make",
+    "pizza",
+    "recipe",
+    "cook",
+    "cooking",
+    "bake",
+    "baking",
+    "ingredient",
+    "ingredients",
+    "flour",
+    "dough",
+    "yeast",
+    "oven",
+    "meal",
+    "food",
+    "restaurant",
+    "cafe",
+    "breakfast",
+    "lunch",
+    "dinner",
+    "dessert",
+    "sandwich",
+    "pasta",
+    "burger",
+    "sushi",
+    "chicken breast",
+    "how to make",
     # Weather
-    "weather", "forecast", "temperature", "rain", "snow", "sunny",
+    "weather",
+    "forecast",
+    "temperature",
+    "rain",
+    "snow",
+    "sunny",
     # News / sports
-    "news", "sport", "sports", "game", "match", "score", "team", "football",
-    "basketball", "soccer", "cricket", "f1", "formula 1",
+    "news",
+    "sport",
+    "sports",
+    "game",
+    "match",
+    "score",
+    "team",
+    "football",
+    "basketball",
+    "soccer",
+    "cricket",
+    "f1",
+    "formula 1",
     # Tech / code
-    "code", "coding", "programming", "script", "html", "python", "javascript",
-    "write a function", "debug", "api", "database",
+    "code",
+    "coding",
+    "programming",
+    "script",
+    "html",
+    "python",
+    "javascript",
+    "write a function",
+    "debug",
+    "api",
+    "database",
     # Other
-    "joke", "jokes", "riddle", "song lyrics", "translate", "capital of",
-    "how tall is", "who invented", "when was",
+    "joke",
+    "jokes",
+    "riddle",
+    "song lyrics",
+    "translate",
+    "capital of",
+    "how tall is",
+    "who invented",
+    "when was",
 }
 
 _OOS_KEYWORDS_AR: set[str] = {
     # Food
-    "بيتزا", "طريقة عمل", "وصفة", "وصفات", "طبخ", "اكل", "أكل", "مطبخ",
-    "طحين", "عجين", "فرن", "مطعم", "فطور", "غداء", "عشاء", "حلويات",
-    "كيكة", "برجر", "شاورما", "مكرونة",
+    "بيتزا",
+    "طريقة عمل",
+    "وصفة",
+    "وصفات",
+    "طبخ",
+    "اكل",
+    "أكل",
+    "مطبخ",
+    "طحين",
+    "عجين",
+    "فرن",
+    "مطعم",
+    "فطور",
+    "غداء",
+    "عشاء",
+    "حلويات",
+    "كيكة",
+    "برجر",
+    "شاورما",
+    "مكرونة",
     # Weather / general
-    "الطقس", "طقس", "درجة الحرارة", "امطار", "شمس",
+    "الطقس",
+    "طقس",
+    "درجة الحرارة",
+    "امطار",
+    "شمس",
     # Sports / news
-    "اخبار", "رياضة", "كرة قدم", "مباراة", "نتيجة", "فريق",
+    "اخبار",
+    "رياضة",
+    "كرة قدم",
+    "مباراة",
+    "نتيجة",
+    "فريق",
     # Tech
-    "كود", "برمجة", "اكتب كود", "برنامج",
+    "كود",
+    "برمجة",
+    "اكتب كود",
+    "برنامج",
     # Other
-    "نكتة", "نكت", "اغنية", "ترجمة", "كلمات اغنية",
+    "نكتة",
+    "نكت",
+    "اغنية",
+    "ترجمة",
+    "كلمات اغنية",
 }
 
 
@@ -1467,16 +1554,16 @@ def _build_therapist_prompt(
             "- Absolutely NO bilingual translation block (do NOT provide the response in both languages)."
         )
     elif language == "ar":
-            sections.append(
-                "Language Instruction:\n"
-                "- The user spoke in Arabic.\n"
-                "- You MUST respond ENTIRELY and ONLY in warm, natural spoken Egyptian Arabic (عامية مصرية دافئة وبسيطة).\n"
-                "- Do NOT use Modern Standard Arabic (الفصحى).\n"
-                "- Sound like a caring, close friend — NOT a textbook or formal counselor.\n"
-                "- Example tone: 'أنا سامعك، وده طبيعي تحس كده — إيه اللي بيضايقك أكتر؟'\n"
-                "- Use ONLY Arabic script. Do NOT mix English, Latin alphabet, or any other languages/scripts into your response.\n"
-                "- Absolutely NO bilingual translation block (do NOT provide the response in both languages)."
-            )
+        sections.append(
+            "Language Instruction:\n"
+            "- The user spoke in Arabic.\n"
+            "- You MUST respond ENTIRELY and ONLY in warm, natural spoken Egyptian Arabic (عامية مصرية دافئة وبسيطة).\n"
+            "- Do NOT use Modern Standard Arabic (الفصحى).\n"
+            "- Sound like a caring, close friend — NOT a textbook or formal counselor.\n"
+            "- Example tone: 'أنا سامعك، وده طبيعي تحس كده — إيه اللي بيضايقك أكتر؟'\n"
+            "- Use ONLY Arabic script. Do NOT mix English, Latin alphabet, or any other languages/scripts into your response.\n"
+            "- Absolutely NO bilingual translation block (do NOT provide the response in both languages)."
+        )
 
     if chunks:
         if language == "ar":
@@ -1909,4 +1996,3 @@ class NLPPipeline:
 
 # Global pipeline instance
 nlp_pipeline = NLPPipeline()
-
