@@ -1630,13 +1630,30 @@ class NLPPipeline:
         messages.append({"role": "user", "content": query})
 
         try:
+            # Try primary model (70B)
             response = await self._client.chat.completions.create(
                 model=GROQ_MODEL, messages=messages, temperature=0.4, max_tokens=700
             )
             return response.choices[0].message.content.strip()
-        except Exception as e:
-            logger.error(f"Groq Chat Completion Error: {e}", exc_info=True)
-            return FALLBACK_GENERAL
+        except Exception as primary_err:
+            logger.warning(
+                f"Primary Groq model ({GROQ_MODEL}) failed, attempting fallback: {primary_err}"
+            )
+            try:
+                # Fallback to 8B model which has a separate/higher rate limit quota
+                fallback_model = "llama-3.1-8b-instant"
+                response = await self._client.chat.completions.create(
+                    model=fallback_model,
+                    messages=messages,
+                    temperature=0.4,
+                    max_tokens=700,
+                )
+                return response.choices[0].message.content.strip()
+            except Exception as fallback_err:
+                logger.error(
+                    f"Fallback Groq model failed: {fallback_err}", exc_info=True
+                )
+                return FALLBACK_GENERAL
 
     # ================================================================
     # RUN PIPELINE — main entry point
